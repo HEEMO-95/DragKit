@@ -10,12 +10,17 @@ master = mavutil.mavlink_connection('udpin:0.0.0.0:14551')  # mavproxy.py --out=
 master.wait_heartbeat()
 
 
-def set_pos_local_ned(front:int, right:int, pos_alt:int, heading:float):
+def set_pos_local_ned(front:int, right:int, pos_alt:int, yaw:float=1):
+
+    if yaw == 1:
+        type_mask=(0b110111111000)
+    else:
+        type_mask=(0b010111111000)
 
     master.mav.send(mavutil.mavlink.MAVLink_set_position_target_local_ned_message(
         10, master.target_system, master.target_component,
         mavutil.mavlink.MAV_FRAME_LOCAL_NED,  # refrance frame option
-        (0b010111111000),  # control option
+        type_mask,  # control option
         front,  # meters in front of the airplane
         right,  # meters right of the airplane
         pos_alt,  # meters NEDown , -negative- value for ^upward^ height
@@ -23,7 +28,7 @@ def set_pos_local_ned(front:int, right:int, pos_alt:int, heading:float):
         0,  # velocity in y direction
         0,  # velocity in z direction
         0, 0, 0, # accelartions (not supported)
-        heading,  # yaw or heading in radians, 0 for front or north (depends on refrance frame)
+        0,  # yaw or heading in radians, 0 for front or north (depends on refrance frame)
         0  # yaw rate in rad/s
     ))
 
@@ -153,6 +158,8 @@ def request_message_interval(message_id: int, frequency_hz: float):
 def do_stop():
         action = 'stoping'
         pause_continue(0)
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
+        pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
 
         while action == 'stoping':  # actions are done within inner loops
             nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
@@ -162,5 +169,77 @@ def do_stop():
             print(f'{speed_vector}, {action}')
             if speed_vector < 1 :  # inner while loop stop condition 
                 action = 'stopped' # while loop shutdown line
-                return action
+                stop_point = (pos_x, pos_y, pos_z)
+                return action, stop_point
+
+      
+def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
+    i = 0
+    action = 'do_scan'
+    flight_mode('GUIDED')
+    print(action)
+    move = True
+    nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
+    pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
+    AHRS2 = master.recv_match(type='AHRS2', blocking=True)
+    heading = AHRS2.yaw
+
+    while action == 'do_scan':
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
+        current_vx, current_vy = float(nav.vx), float(nav.vy)
+        speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+
+        try:
+            scan = scans[i]
+
+        except:
+            action = 'scan_done'   # loop breaker
             return action
+
+        print(f'{speed_vector}, {action}, {i}')
+
+        if move == True:
+            error = scan
+            error_vector= np.sqrt(error[0]**2 + error[1]**2)
+
+            error_relative_heading= np.arctan2(error[1], error[0])
+
+            compined_heading = heading + error_relative_heading
+
+            pos_x = pos_x + (error_vector* np.cos(compined_heading))
+            pos_y = pos_y + (error_vector* np.sin(compined_heading))
+            print(f' x = {pos_x}, y = {pos_y}')
+
+            set_pos_local_ned(pos_x,pos_y,pos_z, yaw)
+            move = False
+
+        if speed_vector > 1:
+            mav = master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
+            wp_dist = mav.wp_dist
+            if wp_dist == 0 :
+                i+=1
+                move = True
+
+
+def go_back(point=(0,0,0),yaw=0):
+    x , y , z = point[0], point[1], point[2] 
+    flight_mode('GUIDED')
+    set_pos_local_ned(x,y,z,yaw)
+    while True:
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
+        current_vx, current_vy = float(nav.vx), float(nav.vy)
+        speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+        if speed_vector > 1:
+            mav = master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
+            wp_dist = mav.wp_dist
+            if wp_dist == 0 :
+                break
+            
+    return 'got_back'
+
+
+def resume():
+    flight_mode('AUTO')
+    pause_continue(1)
+    action = 'normal'
+    return action
