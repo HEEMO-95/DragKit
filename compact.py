@@ -1,5 +1,9 @@
 from DragKit import *
 
 a, stop_point = do_stop()
+
 if a == 'stopped':
-    go_back(stop_point,yaw=1)
+    a = go_back(stop_point)
+
+if a == 'got_back':
+    do_scan()
