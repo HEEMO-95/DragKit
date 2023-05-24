@@ -1,6 +1,6 @@
 '''
 auther : heemo
-this file contains mavlink commands and messages to be imported as functions
+this file contains mavlink commands and messages requests in logical loops
 '''
 
 import numpy as np
