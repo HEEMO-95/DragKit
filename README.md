@@ -130,8 +130,8 @@ def go_back(point=(0,0,20),yaw=0)
             if wp_dist == 0 :
                 done = True
                 action = 'got_back'
-            
-    return action:
+                return action:
+    
 ``` 
 go_back defualt waypoint is the start waypoint ('0,0,0' in local frame), and the defualt yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
 
@@ -144,6 +144,7 @@ The align action:
 def align(steps: tuple):
     done = false
     flight_mode('GUIDED')
+    K = 0.002
 
     while not done:
         try:
@@ -160,12 +161,12 @@ def align(steps: tuple):
 
         nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
-        speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+        speed_vector= np.sqrt(current_vx**2 + current_vy**2)
 
         step_x = K * (error_vector* np.cos(compined_heading))
         step_y = K * (error_vector* np.sin(compined_heading))
 
-        step_vector = np.sqrt(step**2 + step **2)
+        step_vector = np.sqrt(step_x**2 + step_y**2)
 
         if speed_vector != step_vector :
             set_vel_glob(step_x, step_y)
