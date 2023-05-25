@@ -68,9 +68,7 @@ this is a very simple python script, but in order to create powerful script able
 
 Here lays the power of DragKit package!
 
-# DragKit
-
-Actions:
+# DragKit Actions:
 
 DragKit is made by a list of 'actions', actions are a combination of multiple commands and messages in loops checking the aircraft state and provide conformation ubon completion, with the nesscary feedback data if any.
 
