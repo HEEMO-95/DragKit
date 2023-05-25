@@ -1,6 +1,7 @@
 '''
 auther : heemo
 this file contains mavlink commands and messages to be imported as functions
+and a compnations of commands called (actions)
 '''
 
 import numpy as np
@@ -158,19 +159,17 @@ def request_message_interval(message_id: int, frequency_hz: float):
 def do_stop():
         done = False
         pause_continue(0)
-        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
+        nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
-
-        while not done:  # actions are done within inner loops
-            nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
-            current_vx = float(nav.vx)
-            current_vy = float(nav.vy)
-            speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+        while not done:
+            nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+            current_vx, current_vy = float(nav.vx) , float(nav.vy)
+            speed_vector= np.sqrt(current_vx**2 + current_vy**2)
             print(f'{speed_vector}, {action}')
-            if speed_vector < 1 :  # inner while loop stop condition 
-                action = 'stopped' # while loop shutdown line
+            if speed_vector < 1 : 
+                action = 'stopped'
                 done = True
-                stop_point = (pos_x, pos_y, pos_z)
+                start_point = (pos_x, pos_y, pos_z)
                 return action, stop_point
 
       
@@ -189,29 +188,21 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
-
         try:
             scan = scans[i]
-
         except:
             done = True
             action = 'scan_done'   # loop breaker
             return action
-
         print(f'{speed_vector}, {action}, {i}')
-
         if move == True:
             error = scan
             error_vector= np.sqrt(error[0]**2 + error[1]**2)
-
             error_relative_heading= np.arctan2(error[1], error[0])
-
             compined_heading = heading + error_relative_heading
-
             pos_x = pos_x + (error_vector* np.cos(compined_heading))
             pos_y = pos_y + (error_vector* np.sin(compined_heading))
             print(f' x = {pos_x}, y = {pos_y}')
-
             set_pos_local_ned(pos_x,pos_y,pos_z, yaw)
             move = False
 
@@ -249,29 +240,22 @@ def align(steps: tuple):
     done = False
     flight_mode('GUIDED')
     K = 0.002
-
     while not done:
         try:
             x, y = steps[0], steps[1]
         except:
             done = True
             return = 'lost'
-
         AHRS2 = master.recv_match(type='AHRS2', blocking=True)
         heading = AHRS2.yaw
-
         error_relative_heading = np.arctan2(y, x)
         compined_heading = heading + error_relative_heading
-
         nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy**2)
-
         step_x = K * (error_vector* np.cos(compined_heading))
         step_y = K * (error_vector* np.sin(compined_heading))
-
         step_vector = np.sqrt(step_x**2 + step_y**2)
-
         if speed_vector != step_vector :
             set_vel_glob(step_x, step_y)
 
