@@ -48,11 +48,11 @@ heading = AHRS2.yaw
 or mission sequance (waypoints) data message
 ``` python
 mission = master.recv_match(type='MISSION_ITEM_REACHED', blocking=Tr
-seq = mission.seq)eu
+seq = mission.seq)
 ```
-ing those reading constantly coming from the drone, allows to trigger actions at a desired point or state
+with readings constantly coming from the drone, it allows to trigger actions at a desired point or state.
 
-Example of sending land command to aircraft
+Example of sending takeoff command to aircraft
 ``` python
 def takeoff_command(alt: int):
     Drone.mav.command_long_send(Drone.target_system, Drone.target_component,
