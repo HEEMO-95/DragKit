@@ -4,8 +4,7 @@ Drag to infinity and beyond
 ![image](https://github.com/HEEMO-95/DragKit/assets/81169269/90da7923-fc9a-492f-97ae-e6eb0609a9d3)
 
 
-
-DragKit python package made to allow our team in SAUS competion to program drones intelgently in few lines!
+DragKit python package made to allow our team in SAUS competition to program drones intelligently in few lines!
 
 ``` python
 from DragKit import *
@@ -19,8 +18,8 @@ if a == 'got_back':
     do_scan()
 ```
 
-With the ability to integrate computer vision to do precesion alignment.
-DragKit GitHub:
+With the ability to integrate computer vision to do precision alignment.
+
 
 # Background
 
@@ -35,7 +34,7 @@ Ardupilot communicate with other programs via Mavlink messages, that can be tran
 # Pymavlink:
 As the name suggests, the Pymavlink library allows to construct python scripts that uses the Mavlink protocol.
 
-First, here is an example of connecting the drone to a ground station or on-board computer with Pymavlink on on-board computer:
+First, lets take a look at an example of connecting the drone to a ground station or on-board computer with Pymavlink:
 ``` python
 from pymavlink import mavuti
 Drone = mavutil.mavlink_connection('udpin:0.0.0.0:14551')
@@ -45,7 +44,7 @@ after establishing a mavlink connection, we can start receiving aircraft status 
 AHRS2 = Drone.recv_match(type='AHRS2', blocking=True)
 heading = AHRS2.yaw
 ``` 
-or mission sequance (waypoints) data message
+or mission sequence (waypoints) data message:
 ``` python
 mission = master.recv_match(type='MISSION_ITEM_REACHED', blocking=Tr
 seq = mission.seq)
@@ -64,15 +63,15 @@ takeoff_command(50)  # takeoff to 50 meter
 ``` 
 as shown sending commands allows to specify action parameters with 'Enums' that explained in the Pymavlink and Arudpilot documents.
 
-this is a very simple python script, but in order to create powerful script able to do intelligent stuff, you need to add logic, and condtions to meet a vehicle state
+this is a very simple python script, but in order to create powerful script able to do intelligent stuff, you need to add logic, and conditions to meet a vehicle state
 
 Here lays the power of DragKit package!
 
 # DragKit Actions:
 
-DragKit is made by a list of 'actions', actions are a combination of multiple commands and messages in loops checking the aircraft state and provide conformation ubon completion, with the nesscary feedback data if there was a need of any.
+DragKit.py is made by a list of 'actions', actions are a combination of multiple commands and messages in loops checking the aircraft state and provide conformation upon completion, with the necessary feedback data if there was a need of any.
 
-Action expample:
+Action example:
 ``` python
 def do_stop():
     #setup
@@ -107,7 +106,7 @@ def resume():
 ``` 
 Actions arguments
 
-Actions may have arguments, you can provide your own arugment to the action or leave it empty for defualt, see for example 'go_back' action :
+Actions may have arguments, you can provide your own arguments to the action or leave it empty for default, see for example 'go_back' action:
 ``` python
 def go_back(point=(0,0,20),yaw=0):
 
@@ -132,11 +131,11 @@ def go_back(point=(0,0,20),yaw=0):
                 action = 'got_back'
                 return action
 ``` 
-go_back defualt waypoint is the start waypoint ('0,0,0' in local frame), and the defualt yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
+go_back default way point is the start waypoint ('0,0,0' in local frame), and the default yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
 
 # Computer vision alignment action
 
-With the aid of computer vision, a camera can see and identfy a land mark and its position on a picutre frame, and it import it to our script as a tuple, the aircraft will keep adjusting its vertical and horizental speeds according to how far is the position of that opject from our center of the picutre frame, until its completely centered or (0,0), thus the speeds.
+With the aid of computer vision, a camera can see and identify a land mark and its position on a picture frame, and it import it to our script as a tuple, the aircraft will keep adjusting its vertical and horizontal speeds according to how far is the position of that object from our center of the picture frame, until its completely centered or (0,0), thus the speeds.
 
 The align action:
 ``` python
