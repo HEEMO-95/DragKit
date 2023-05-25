@@ -175,10 +175,9 @@ def align(steps: tuple):
             done = True
             return = 'aligned'
 ``` 
-its important to align the opject heading to the drone, with the heading of the drone itself to, as the speeds is adjusted in the local frame of the drone, and keep updating the opject postion, until it reaches zero.
+its important to align the opject relative heading to the drone with the heading of the drone itself, as the speeds are adjusted in the (local frame) of the drone
+and ofcouse, inform the user if the aircraft is completely allinged or the reading of the opject position has lost.
 
-and ofcouse, inform the user if the aircraft is completely allinged or the reading of our opject has lost.
+DragKit are currently being devloped, new actions are being added!
 
-DragKit are currently being devloped, actions areconstantly being added
-
-feel free to check DarkKit GitHub for the latest update, providing a feedback or push requests are welcome.
+Feel free to check DarkKit GitHub for the latest update, providing a feedback or push requests are welcome.
