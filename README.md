@@ -25,6 +25,7 @@ DragKit GitHub:
 # Background
 
 Ardupilot:
+
 Drone programming with python made easy by having the Ardupilot software running on the drone flight controller board.
 
 Autopilot is a very capable autopilot software, including more than 700k lines of code, it can navigate the aircraft or any vehicle running the software with its advanced algorithms.
