@@ -64,17 +64,17 @@ takeoff_command(50)  # takeoff to 50 meter
 ``` 
 as shown sending commands allows to specify action parameters with 'Enums' that explained in the Pymavlink and Arudpilot documents.
 
-this is a very simple python script, but in order to create powerful script able to do intelligent stuff, you need to add logic, and condtions to meet based vehicle state
+this is a very simple python script, but in order to create powerful script able to do intelligent stuff, you need to add logic, and condtions to meet a vehicle state
 
 Here lays the power of DragKit package!
 
 # DragKit Actions:
 
-DragKit is made by a list of 'actions', actions are a combination of multiple commands and messages in loops checking the aircraft state and provide conformation ubon completion, with the nesscary feedback data if any.
+DragKit is made by a list of 'actions', actions are a combination of multiple commands and messages in loops checking the aircraft state and provide conformation ubon completion, with the nesscary feedback data if there was a need of any.
 
 Action expample:
 ``` python
-def do_stop()
+def do_stop():
     #setup
         done = False
         pause_continue(0)
@@ -83,16 +83,16 @@ def do_stop()
     #loop
         while not done:
             nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-            current_vx = float(nav.vx)
-            current_vy = float(nav.vy)
-            speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+            current_vx, current_vy = float(nav.vx) , float(nav.vy)
+            speed_vector= np.sqrt(current_vx**2 + current_vy**2)
+            
             print(f'{speed_vector}, {action}')
 
             if speed_vector < 1 : 
                 action = 'stopped'
                 done = True
-                start_stop_point = (pos_x, pos_y, pos_z)
-                return action, stop_point:
+                start_point = (pos_x, pos_y, pos_z)
+                return action, stop_point
 ``` 
 'do_stop' action is used when the aircraft is on route to a waypoint, the actions usually made of a setup, and a loop, the setup prepares the aircraft to take the action, while the loop keeps an eye of the vehicle state.
 
