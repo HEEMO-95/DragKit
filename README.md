@@ -135,7 +135,7 @@ go_back default way point is the start waypoint ('0,0,0' in local frame), and th
 
 # Computer vision alignment action
 
-With the aid of computer vision, a camera can see and identify a land mark and how far the position of it from the center of the picture frame, and import it to our script as a tuple, the aircraft will keep adjusting its vertical and horizontal speeds according to that tuplee, until its completely centered or (0,0), thus the speeds.
+With the aid of computer vision, a camera can see and identify a land mark and how far its position pixel-wise from the center of the picture frame, and import it to our script as a tuple, the aircraft will keep adjusting its vertical and horizontal speeds according to that tuple, until its completely centered or (0,0), thus the speeds.
 
 The align action:
 ``` python
