@@ -67,7 +67,9 @@ as shown sending commands allows to specify action parameters with 'Enums' that 
 this is a very simple python script, but in order to create powerful script able to do intelligent stuff, you need to add logic, and condtions to meet based vehicle state
 
 Here lays the power of DragKit package!
-DragKit
+
+# DragKit
+
 Actions:
 
 DragKit is made by a list of 'actions', actions are a combination of multiple commands and messages in loops checking the aircraft state and provide conformation ubon completion, with the nesscary feedback data if any.
