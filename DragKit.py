@@ -223,27 +223,32 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
                 move = True
 
 
-def go_back(point=(0,0,0),yaw=0):
-    x , y , z = point[0], point[1], point[2] 
+def go_back(point=(0,0,20),yaw=0)
+
+    x , y , z = point[0], point[1], point[2]
     flight_mode('GUIDED')
     set_pos_local_ned(x,y,z,yaw)
     done = False
+    
     while not done:
-        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+
         if speed_vector > 1:
-            mav = master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
+            mav= Drone.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
             wp_dist = mav.wp_dist
+
             if wp_dist == 0 :
                 done = True
                 action = 'got_back'
-            
-    return action
+                return action:
 
-def align(steps: list):
-    done = false
+                
+def align(steps: tuple):
+    done = False
     flight_mode('GUIDED')
+    K = 0.002
 
     while not done:
         try:
@@ -260,12 +265,12 @@ def align(steps: list):
 
         nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
-        speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+        speed_vector= np.sqrt(current_vx**2 + current_vy**2)
 
         step_x = K * (error_vector* np.cos(compined_heading))
         step_y = K * (error_vector* np.sin(compined_heading))
 
-        step_vector = np.sqrt(step**2 + step **2)
+        step_vector = np.sqrt(step_x**2 + step_y**2)
 
         if speed_vector != step_vector :
             set_vel_glob(step_x, step_y)
