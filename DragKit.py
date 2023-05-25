@@ -241,6 +241,38 @@ def go_back(point=(0,0,0),yaw=0):
             
     return action
 
+def align(steps: list):
+    done = false
+    flight_mode('GUIDED')
+
+    while not done:
+        try:
+            x, y = steps[0], steps[1]
+        except:
+            done = True
+            return = 'lost'
+
+        AHRS2 = master.recv_match(type='AHRS2', blocking=True)
+        heading = AHRS2.yaw
+
+        error_relative_heading = np.arctan2(y, x)
+        compined_heading = heading + error_relative_heading
+
+        nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        current_vx, current_vy = float(nav.vx), float(nav.vy)
+        speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+
+        step_x = K * (error_vector* np.cos(compined_heading))
+        step_y = K * (error_vector* np.sin(compined_heading))
+
+        step_vector = np.sqrt(step**2 + step **2)
+
+        if speed_vector != step_vector :
+            set_vel_glob(step_x, step_y)
+
+        if abs(speed_vector - step_vector) = 0:
+            done = True
+            return = 'aligned'
 
 def resume():
     flight_mode('AUTO')
