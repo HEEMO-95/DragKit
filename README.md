@@ -73,9 +73,9 @@ Here lays the power of DragKit package!
 DragKit is made by a list of 'actions', actions are a combination of multiple commands and messages in loops checking the aircraft state and provide conformation ubon completion, with the nesscary feedback data if any.
 
 Action expample:
-
-def do_stop()
 ``` python
+def do_stop()
+
         done = False
         pause_continue(0)
         nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
