@@ -23,7 +23,7 @@ With the ability to integrate computer vision to do precision alignment.
 
 # Background
 
-Ardupilot:
+# Ardupilot:
 
 Drone programming with python made easy by having the Ardupilot software running on the drone flight controller board.
 
