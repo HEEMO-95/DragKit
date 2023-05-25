@@ -1,5 +1,5 @@
-بسم الله الرحمن الرحيم
-# DragKit
+# بسم الله الرحمن الرحيم 
+ # DragKit
 Drag to infinity and beyond
 ![image](https://github.com/HEEMO-95/DragKit/assets/81169269/90da7923-fc9a-492f-97ae-e6eb0609a9d3)
 
@@ -22,16 +22,16 @@ if a == 'got_back':
 With the ability to integrate computer vision to do precesion alignment.
 DragKit GitHub:
 
-Background
-Ardupilot:
+# Background
 
+Ardupilot:
 Drone programming with python made easy by having the Ardupilot software running on the drone flight controller board.
 
 Autopilot is a very capable autopilot software, including more than 700k lines of code, it can navigate the aircraft or any vehicle running the software with its advanced algorithms.
 
 Ardupilot communicate with other programs via Mavlink messages, that can be transmitted or received by Ardupilot software, providing two way communication protocol allowing the user to read the vehicle data and send navigation commands, in conjunction with computer vision or other tools, it can become a very powerful tool.
-Pymavlink:
 
+# Pymavlink:
 As the name suggests, the Pymavlink library allows to construct python scripts that uses the Mavlink protocol.
 
 First, here is an example of connecting the drone to a ground station or on-board computer with Pymavlink on on-board computer:
@@ -58,9 +58,9 @@ def takeoff_command(alt: int):
                             mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0,
                             0,0,0,0,0,0,  # empty target:
                             alt)  # altitude target:
-``` 
-takeoff_command(50)  # takeoff to 50 meter
 
+takeoff_command(50)  # takeoff to 50 meter
+``` 
 as shown sending commands allows to specify action parameters with 'Enums' that explained in the Pymavlink and Arudpilot documents.
 
 this is a very simple python script, but in order to create powerful script able to do intelligent stuff, you need to add logic, and condtions to meet based vehicle state
@@ -133,7 +133,8 @@ def go_back(point=(0,0,20),yaw=0)
     return action:
 ``` 
 go_back defualt waypoint is the start waypoint ('0,0,0' in local frame), and the defualt yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
-Computer vision alignment action
+
+# Computer vision alignment action
 
 With the aid of computer vision, a camera can see and identfy a land mark and its position on a picutre frame, and it import it to our script as a tuple, the aircraft will keep adjusting its vertical and horizental speeds according to how far is the position of that opject from our center of the picutre frame, until its completely centered or (0,0), thus the speeds.
 ``` python
