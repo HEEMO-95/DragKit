@@ -1,5 +1,5 @@
 '''
-auther : heemo
+author : heemo
 this file contains mavlink commands and messages to be imported as functions
 and a compnations of commands called (actions)
 '''
