@@ -142,7 +142,7 @@ With the aid of computer vision, a camera can see and identfy a land mark and it
 The align action:
 ``` python
 def align(steps: tuple):
-    done = false
+    done = False
     flight_mode('GUIDED')
     K = 0.002
 
