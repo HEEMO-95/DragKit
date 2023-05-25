@@ -109,7 +109,7 @@ Actions arguments
 
 Actions may have arguments, you can provide your own arugment to the action or leave it empty for defualt, see for example 'go_back' action :
 ``` python
-def go_back(point=(0,0,20),yaw=0)
+def go_back(point=(0,0,20),yaw=0):
 
     #setup
     x , y , z = point[0], point[1], point[2]
@@ -130,8 +130,7 @@ def go_back(point=(0,0,20),yaw=0)
             if wp_dist == 0 :
                 done = True
                 action = 'got_back'
-                return action:
-    
+                return action
 ``` 
 go_back defualt waypoint is the start waypoint ('0,0,0' in local frame), and the defualt yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
 
