@@ -156,12 +156,12 @@ def request_message_interval(message_id: int, frequency_hz: float):
 
 
 def do_stop():
-        action = 'stoping'
+        done = False
         pause_continue(0)
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
         pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
 
-        while action == 'stoping':  # actions are done within inner loops
+        while not done:  # actions are done within inner loops
             nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
             current_vx = float(nav.vx)
             current_vy = float(nav.vy)
@@ -169,6 +169,7 @@ def do_stop():
             print(f'{speed_vector}, {action}')
             if speed_vector < 1 :  # inner while loop stop condition 
                 action = 'stopped' # while loop shutdown line
+                done = True
                 stop_point = (pos_x, pos_y, pos_z)
                 return action, stop_point
 
@@ -183,8 +184,8 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
     pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
     AHRS2 = master.recv_match(type='AHRS2', blocking=True)
     heading = AHRS2.yaw
-
-    while action == 'do_scan':
+    done = False
+    while not done:
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
@@ -193,6 +194,7 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
             scan = scans[i]
 
         except:
+            done = True
             action = 'scan_done'   # loop breaker
             return action
 
@@ -225,7 +227,8 @@ def go_back(point=(0,0,0),yaw=0):
     x , y , z = point[0], point[1], point[2] 
     flight_mode('GUIDED')
     set_pos_local_ned(x,y,z,yaw)
-    while True:
+    done = False
+    while not done:
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
@@ -233,9 +236,10 @@ def go_back(point=(0,0,0),yaw=0):
             mav = master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
             wp_dist = mav.wp_dist
             if wp_dist == 0 :
-                break
+                done = True
+                action = 'got_back'
             
-    return 'got_back'
+    return action
 
 
 def resume():
