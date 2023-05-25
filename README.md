@@ -75,12 +75,12 @@ DragKit is made by a list of 'actions', actions are a combination of multiple co
 Action expample:
 ``` python
 def do_stop()
-
+    #setup
         done = False
         pause_continue(0)
         nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
-
+    #loop
         while not done:
             nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
             current_vx = float(nav.vx)
@@ -138,9 +138,9 @@ go_back defualt waypoint is the start waypoint ('0,0,0' in local frame), and the
 # Computer vision alignment action
 
 With the aid of computer vision, a camera can see and identfy a land mark and its position on a picutre frame, and it import it to our script as a tuple, the aircraft will keep adjusting its vertical and horizental speeds according to how far is the position of that opject from our center of the picutre frame, until its completely centered or (0,0), thus the speeds.
-``` python
-The align action:
 
+The align action:
+``` python
 def align(steps: tuple):
     done = false
     flight_mode('GUIDED')
