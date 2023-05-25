@@ -7,6 +7,7 @@ Drag to infinity and beyond
 
 DragKit python package made to allow our team in SAUS competion to program drones intelgently in few lines!
 
+``` python
 from DragKit import *
 
 a, stop_point = do_stop()
@@ -16,9 +17,11 @@ if a == 'stopped':
 
 if a == 'got_back':
     do_scan()
+```
 
 With the ability to integrate computer vision to do precesion alignment.
 DragKit GitHub:
+
 Background
 Ardupilot:
 
@@ -32,30 +35,30 @@ Pymavlink:
 As the name suggests, the Pymavlink library allows to construct python scripts that uses the Mavlink protocol.
 
 First, here is an example of connecting the drone to a ground station or on-board computer with Pymavlink on on-board computer:
-
+``` python
 from pymavlink import mavuti
 Drone = mavutil.mavlink_connection('udpin:0.0.0.0:14551')
-
+``` 
 after establishing a mavlink connection, we can start receiving aircraft status message
-
+``` python
 AHRS2 = Drone.recv_match(type='AHRS2', blocking=True)
 heading = AHRS2.yaw
-
+``` 
 or mission sequance (waypoints) data message
-
+``` python
 mission = master.recv_match(type='MISSION_ITEM_REACHED', blocking=Tr
 seq = mission.seq)eu
-
+```
 ing those reading constantly coming from the drone, allows to trigger actions at a desired point or state
 
 Example of sending land command to aircraft
-
+``` python
 def takeoff_command(alt: int):
     Drone.mav.command_long_send(Drone.target_system, Drone.target_component,
                             mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0,
                             0,0,0,0,0,0,  # empty target:
                             alt)  # altitude target:
-
+``` 
 takeoff_command(50)  # takeoff to 50 meter
 
 as shown sending commands allows to specify action parameters with 'Enums' that explained in the Pymavlink and Arudpilot documents.
@@ -71,7 +74,7 @@ DragKit is made by a list of 'actions', actions are a combination of multiple co
 Action expample:
 
 def do_stop()
-
+``` python
         done = False
         pause_continue(0)
         nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
@@ -89,22 +92,22 @@ def do_stop()
                 done = True
                 start_stop_point = (pos_x, pos_y, pos_z)
                 return action, stop_point:
-
+``` 
 'do_stop' action is used when the aircraft is on route to a waypoint, the actions usually made of a setup, and a loop, the setup prepares the aircraft to take the action, while the loop keeps an eye of the vehicle state.
 
 To resume the flight after stopping, here is another action example that can be run if desired action feedback is met.
-
+``` python
 def resume():
     flight_mode('AUTO')
     pause_continue(1)
     action = 'normal'
     return action
 # no while loop
-
+``` 
 Actions arguments
 
 Actions may have arguments, you can provide your own arugment to the action or leave it empty for defualt, see for example 'go_back' action :
-
+``` python
 def go_back(point=(0,0,20),yaw=0)
 
     #setup
@@ -128,12 +131,12 @@ def go_back(point=(0,0,20),yaw=0)
                 action = 'got_back'
             
     return action:
-
+``` 
 go_back defualt waypoint is the start waypoint ('0,0,0' in local frame), and the defualt yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
 Computer vision alignment action
 
 With the aid of computer vision, a camera can see and identfy a land mark and its position on a picutre frame, and it import it to our script as a tuple, the aircraft will keep adjusting its vertical and horizental speeds according to how far is the position of that opject from our center of the picutre frame, until its completely centered or (0,0), thus the speeds.
-
+``` python
 The align action:
 
 def align(steps: tuple):
@@ -168,7 +171,7 @@ def align(steps: tuple):
         if abs(speed_vector - step_vector) = 0:
             done = True
             return = 'aligned'
-
+``` 
 its important to align the opject heading to the drone, with the heading of the drone itself to, as the speeds is adjusted in the local frame of the drone, and keep updating the opject postion, until it reaches zero.
 
 and ofcouse, inform the user if the aircraft is completely allinged or the reading of our opject has lost.
