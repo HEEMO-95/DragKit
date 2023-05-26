@@ -236,7 +236,7 @@ def go_back(point=(0,0,20),yaw=0)
                 action = 'got_back'
                 return action:
 
-                
+      
 def align():
     done = False
     flight_mode('GUIDED')
@@ -261,8 +261,8 @@ def align():
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy**2)
 
-        step_x = cos(roll) * K * (error_vector* np.cos(compined_heading))
-        step_y = cos(pitch) * K * (error_vector* np.sin(compined_heading))
+        step_x = np.cos(roll) * K * (error_vector* np.cos(compined_heading))
+        step_y = np.cos(pitch) * K * (error_vector* np.sin(compined_heading))
 
         step_vector = np.sqrt(step_x**2 + step_y**2)
 
