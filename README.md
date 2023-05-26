@@ -145,35 +145,37 @@ def align():
     K = 0.001
 
     while not done:
+
         try:
-        x, y = get_data()
+            x, y = get_data()
         except:
             done = True
-            return = 'lost'
+            return 'lost'
+        else:
+            Attitude = master.recv_match(type='AHRS2', blocking=True)
+            heading = Attitude.yaw
+            pitch = Attitude.pitch
+            roll = Attitude.roll
 
-        AHRS2 = master.recv_match(type='AHRS2', blocking=True)
-        heading = AHRS2.yaw
-        pitch = AHRS2.pitch
-        roll = AHRS2.roll
+            step_relative_heading = np.arctan2(y, x)
+            compined_heading = heading + step_relative_heading
 
-        error_relative_heading = np.arctan2(y, x)
-        compined_heading = heading + error_relative_heading
+            nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+            current_vx, current_vy = float(nav.vx), float(nav.vy)
+            speed_vector= np.sqrt(current_vx**2 + current_vy**2)
 
-        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-        current_vx, current_vy = float(nav.vx), float(nav.vy)
-        speed_vector= np.sqrt(current_vx**2 + current_vy**2)
+            step_x = np.cos(roll) * K * (step_vector * np.cos(compined_heading))
+            step_y = np.cos(pitch) * K * (step_vector * np.sin(compined_heading))
 
-        step_x = np.cos(roll) * K * (error_vector* np.cos(compined_heading))
-        step_y = np.cos(pitch) * K * (error_vector* np.sin(compined_heading))
+            step_vector = np.sqrt(step_x**2 + step_y**2)
 
-        step_vector = np.sqrt(step_x**2 + step_y**2)
+            if speed_vector != step_vector :
+                set_vel_glob(step_x, step_y)
 
-        if speed_vector != step_vector :
-            set_vel_glob(step_x, step_y)
+            if abs(speed_vector - step_vector) <= 0.1:
+                done = True
+                return 'aligned'
 
-        if abs(speed_vector - step_vector) = 0:
-            done = True
-            return = 'aligned'
 ``` 
 its important to align the opject relative heading to the drone with the heading of the drone itself, as the speeds are adjusted in the (local frame) of the drone
 and ofcouse, inform the user if the aircraft is completely allinged or the reading of the opject position has lost.
