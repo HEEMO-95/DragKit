@@ -139,14 +139,14 @@ With the aid of computer vision, a camera can see and identify a land mark and h
 
 The align action:
 ``` python
-def align(steps: tuple):
+def align():
     done = False
     flight_mode('GUIDED')
-    K = 0.002
+    K = 0.001
 
     while not done:
         try:
-            x, y = steps[0], steps[1]
+        x, y = get_data()
         except:
             done = True
             return = 'lost'
@@ -163,8 +163,8 @@ def align(steps: tuple):
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy**2)
 
-        step_x = cos(roll) * K * (error_vector* np.cos(compined_heading))
-        step_y = cos(pitch) * K * (error_vector* np.sin(compined_heading))
+        step_x = np.cos(roll) * K * (error_vector* np.cos(compined_heading))
+        step_y = np.cos(pitch) * K * (error_vector* np.sin(compined_heading))
 
         step_vector = np.sqrt(step_x**2 + step_y**2)
 
