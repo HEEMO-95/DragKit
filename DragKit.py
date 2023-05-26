@@ -228,7 +228,7 @@ def go_back(point=(0,0,20),yaw=0)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
 
         if speed_vector > 1:
-            mav= Drone.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
+            mav= master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
             wp_dist = mav.wp_dist
 
             if wp_dist == 0 :
@@ -237,26 +237,35 @@ def go_back(point=(0,0,20),yaw=0)
                 return action:
 
                 
-def align(steps: tuple):
+def align(: tuple):
     done = False
     flight_mode('GUIDED')
     K = 0.002
+
     while not done:
         try:
-            x, y = steps[0], steps[1]
+        x, y = get_data()
         except:
             done = True
             return = 'lost'
+
         AHRS2 = master.recv_match(type='AHRS2', blocking=True)
         heading = AHRS2.yaw
+        pitch = AHRS2.pitch
+        roll = AHRS2.roll
+
         error_relative_heading = np.arctan2(y, x)
         compined_heading = heading + error_relative_heading
-        nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy**2)
-        step_x = K * (error_vector* np.cos(compined_heading))
-        step_y = K * (error_vector* np.sin(compined_heading))
+
+        step_x = cos(roll) * K * (error_vector* np.cos(compined_heading))
+        step_y = cos(pitch) * K * (error_vector* np.sin(compined_heading))
+
         step_vector = np.sqrt(step_x**2 + step_y**2)
+
         if speed_vector != step_vector :
             set_vel_glob(step_x, step_y)
 
