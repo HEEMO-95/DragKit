@@ -138,9 +138,9 @@ def go_back(point=(0,0,50),yaw=0):
 a , start_point , stop_point = do_stop() 
 
 if a == 'stopped'
-    go_back(start_point)
+    go_back(start_point, yaw=1)
 ``` 
-go_back default way point is the takeoff waypoint ('0,0,0' in local frame), and the default yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
+go_back default way point is the takeoff waypoint ('0,0,0' in local frame), and the default yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint, so the above the script will order the aircraft to stop, after it done braking and completely stopped, it will turn and head to the point when the stop action was initiated.
 
 # Computer vision alignment action
 
@@ -188,7 +188,6 @@ def align():
             if abs(speed_vector - step_vector) <= 0.1:
                 done = True
                 return 'aligned'
-
 ``` 
 its important to align the opject relative heading to the drone with the heading of the drone itself, as the speeds are adjusted in the (local frame) of the drone
 and ofcouse, inform the user if the aircraft is completely allinged or the reading of the opject position has lost.
