@@ -153,16 +153,18 @@ def align(steps: tuple):
 
         AHRS2 = master.recv_match(type='AHRS2', blocking=True)
         heading = AHRS2.yaw
+        pitch = AHRS2.pitch
+        roll = AHRS2.roll
 
         error_relative_heading = np.arctan2(y, x)
         compined_heading = heading + error_relative_heading
 
-        nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy**2)
 
-        step_x = K * (error_vector* np.cos(compined_heading))
-        step_y = K * (error_vector* np.sin(compined_heading))
+        step_x = cos(roll) * K * (error_vector* np.cos(compined_heading))
+        step_y = cos(pitch) * K * (error_vector* np.sin(compined_heading))
 
         step_vector = np.sqrt(step_x**2 + step_y**2)
 
