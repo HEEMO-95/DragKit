@@ -237,10 +237,10 @@ def go_back(point=(0,0,20),yaw=0)
                 return action:
 
                 
-def align(: tuple):
+def align():
     done = False
     flight_mode('GUIDED')
-    K = 0.002
+    K = 0.001
 
     while not done:
         try:
