@@ -74,24 +74,22 @@ DragKit.py is made by a list of 'actions', actions are a combination of multiple
 Action example:
 ``` python
 def do_stop():
-    #setup
-        done = False
-        pause_continue(0)
-        nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-        pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
-    #loop
-        while not done:
-            nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-            current_vx, current_vy = float(nav.vx) , float(nav.vy)
-            speed_vector= np.sqrt(current_vx**2 + current_vy**2)
-            
-            print(f'{speed_vector}, {action}')
-
-            if speed_vector < 1 : 
-                action = 'stopped'
-                done = True
-                start_point = (pos_x, pos_y, pos_z)
-                return action, stop_point
+#  setup
+    done = False
+    pause_continue(0)
+    nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+    start_point = float(nav.x), float(nav.y), float(nav.z)
+#  void
+    while not done:
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        current_vx, current_vy = float(nav.vx) , float(nav.vy)
+        speed_vector= np.sqrt(current_vx**2 + current_vy**2)
+        print(f'{speed_vector}, {action}')
+        if speed_vector < 0.5 : 
+            action = 'stopped'
+            done = True
+            stop_point = (nav.x, nav.y, nav.v)
+            return action, start_point, stop_point
 ``` 
 'do_stop' action is used when the aircraft is on route to a waypoint, the actions usually made of a setup, and a loop, the setup prepares the aircraft to take the action, while the loop keeps an eye of the vehicle state.
 
@@ -102,7 +100,6 @@ def resume():
     pause_continue(1)
     action = 'normal'
     return action
-# no while loop
 ``` 
 Actions arguments
 
@@ -110,20 +107,21 @@ Actions may have arguments, you can provide your own arguments to the action or 
 ``` python
 def go_back(point=(0,0,20),yaw=0):
 
-    #setup
+    #  setup
     x , y , z = point[0], point[1], point[2]
     flight_mode('GUIDED')
     set_pos_local_ned(x,y,z,yaw)
     done = False
+    o_time = time.time()
 
-    #loop
+    #  void
     while not done:
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
 
-        if speed_vector > 1:
-            mav= Drone.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
+        if speed_vector > 1 or time.time() - o_time > 5:
+            mav= master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
             wp_dist = mav.wp_dist
 
             if wp_dist == 0 :
@@ -140,14 +138,18 @@ With the aid of computer vision, a camera can see and identify a land mark and h
 The align action:
 ``` python
 def align():
+
+    #  setup
     done = False
     flight_mode('GUIDED')
     K = 0.001
 
+    #  void
     while not done:
 
         try:
             x, y = get_data()
+            step_vector = np.sqrt(x**2 + y**2)
         except:
             done = True
             return 'lost'

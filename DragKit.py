@@ -4,7 +4,7 @@ author email : ibraheem.zhrany@gmail.com
 this file contains mavlink commands and messages to be imported as functions
 and a compnations of commands called (actions)
 '''
-
+import time
 import numpy as np
 from pymavlink import mavutil
 
@@ -160,26 +160,26 @@ def request_message_interval(message_id: int, frequency_hz: float):
 def do_stop():
         done = False
         pause_continue(0)
-        nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-        pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        start_point = float(nav.x), float(nav.y), float(nav.z)
         while not done:
-            nav = Drone.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+            nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
             current_vx, current_vy = float(nav.vx) , float(nav.vy)
             speed_vector= np.sqrt(current_vx**2 + current_vy**2)
             print(f'{speed_vector}, {action}')
-            if speed_vector < 1 : 
+            if speed_vector < 0.5 : 
                 action = 'stopped'
                 done = True
-                start_point = (pos_x, pos_y, pos_z)
-                return action, stop_point
+                stop_point = (nav.x, nav.y, nav.v)
+                return action, start_point, stop_point
 
       
-def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
+def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
     i = 0
     action = 'do_scan'
     flight_mode('GUIDED')
     print(action)
-    move = True
+    move = False
     nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
     pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
     AHRS2 = master.recv_match(type='AHRS2', blocking=True)
@@ -189,14 +189,16 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+
         try:
             scan = scans[i]
         except:
             done = True
             action = 'scan_done'   # loop breaker
             return action
+        
         print(f'{speed_vector}, {action}, {i}')
-        if move == True:
+        if not move :
             error = scan
             error_vector= np.sqrt(error[0]**2 + error[1]**2)
             error_relative_heading= np.arctan2(error[1], error[0])
@@ -205,7 +207,7 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
             pos_y = pos_y + (error_vector* np.sin(compined_heading))
             print(f' x = {pos_x}, y = {pos_y}')
             set_pos_local_ned(pos_x,pos_y,pos_z, yaw)
-            move = False
+            move = True
 
         if speed_vector > 1:
             mav = master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
@@ -215,26 +217,26 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)],yaw=0):
                 move = True
 
 
-def go_back(point=(0,0,20),yaw=0)
+def go_back(point=(0,0,20),yaw=0):
 
     x , y , z = point[0], point[1], point[2]
     flight_mode('GUIDED')
     set_pos_local_ned(x,y,z,yaw)
     done = False
-    
+    o_time = time.time()
     while not done:
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
 
-        if speed_vector > 1:
+        if speed_vector > 1 or time.time() - o_time > 5:
             mav= master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
             wp_dist = mav.wp_dist
 
             if wp_dist == 0 :
                 done = True
                 action = 'got_back'
-                return action:
+                return action
 
       
 def align():
@@ -246,6 +248,7 @@ def align():
 
         try:
             x, y = get_data()
+            step_vector = np.sqrt(x**2 + y**2)
         except:
             done = True
             return 'lost'
@@ -273,6 +276,10 @@ def align():
             if abs(speed_vector - step_vector) <= 0.1:
                 done = True
                 return 'aligned'
+
+
+def get_data(x=1 ,y=1):
+    return x, y
 
 
 def resume():
