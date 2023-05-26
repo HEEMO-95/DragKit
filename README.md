@@ -46,8 +46,8 @@ heading = AHRS2.yaw
 ``` 
 or mission sequence (waypoints) data message:
 ``` python
-mission = master.recv_match(type='MISSION_ITEM_REACHED', blocking=Tr
-seq = mission.seq)
+mission = master.recv_match(type='MISSION_ITEM_REACHED', blocking=True)
+seq = mission.seq
 ```
 with readings constantly coming from the drone, it allows to trigger actions at a desired point or state.
 
@@ -100,12 +100,17 @@ def resume():
     pause_continue(1)
     action = 'normal'
     return action
+   
+a , start_point , stop_point = do_stop()
+
+if a == 'stopped'
+    resume()
 ``` 
 Actions arguments
 
 Actions may have arguments, you can provide your own arguments to the action or leave it empty for default, see for example 'go_back' action:
 ``` python
-def go_back(point=(0,0,20),yaw=0):
+def go_back(point=(0,0,50),yaw=0):
 
     #  setup
     x , y , z = point[0], point[1], point[2]
@@ -128,8 +133,14 @@ def go_back(point=(0,0,20),yaw=0):
                 done = True
                 action = 'got_back'
                 return action
+               
+               
+a , start_point , stop_point = do_stop() 
+
+if a == 'stopped'
+    go_back(start_point)
 ``` 
-go_back default way point is the start waypoint ('0,0,0' in local frame), and the default yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
+go_back default way point is the takeoff waypoint ('0,0,0' in local frame), and the default yaw=0 means the aircraft will hold heading when returning back, 1 allow to yaw towards the next waypoint.
 
 # Computer vision alignment action
 
