@@ -24,7 +24,7 @@ With the ability to implement computer vision for [precision alignment.](https:/
 
 # Background
 
-# Ardupilot:
+ ## Ardupilot: 
 
 Drone programming with python made easy by having the Ardupilot software running on the drone flight controller board.
 
@@ -32,7 +32,7 @@ Autopilot is a very capable autopilot software, including more than 700k lines o
 
 Ardupilot communicate with other programs via Mavlink messages, that can be transmitted or received by Ardupilot software, providing two way communication protocol allowing the user to read the vehicle data and send navigation commands, in conjunction with computer vision or other tools, it can become a very powerful tool.
 
-# Pymavlink:
+## Pymavlink:
 As the name suggests, the Pymavlink library allows to construct python scripts that uses the Mavlink protocol.
 
 First, lets take a look at an example of connecting the drone to a ground station or on-board computer with Pymavlink:
@@ -107,7 +107,7 @@ a , start_point , stop_point = do_stop()
 if a == 'stopped'
     resume()
 ``` 
-Actions arguments
+## Actions arguments
 
 Actions may have arguments, you can provide your own arguments to the action or leave it empty for default, see for example 'go_back' action:
 ``` python
