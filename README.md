@@ -17,7 +17,9 @@ if a == 'got_back':
     do_scan()
 ```
 
-With the ability to integrate computer vision to do precision alignment.
+With the ability to implement computer vision for [precision alignment.](https://github.com/HEEMO-95/DragKit#computer-vision-alignment-action)
+
+
 
 
 # Background
