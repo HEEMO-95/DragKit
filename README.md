@@ -181,8 +181,6 @@ def align():
             step_x = np.cos(roll) * K * (step_vector * np.cos(compined_heading))
             step_y = np.cos(pitch) * K * (step_vector * np.sin(compined_heading))
 
-            step_vector = np.sqrt(step_x**2 + step_y**2)
-
             if speed_vector != step_vector :
                 set_vel_glob(step_x, step_y)
 
