@@ -164,6 +164,7 @@ def align():
         try:
             x, y = get_data()
             error_vector = np.sqrt(x**2 + y**2)
+            error_relative_heading = np.arctan2(y, x)
             
         except:
             done = True
@@ -171,7 +172,6 @@ def align():
         
         else:
 
-            error_relative_heading = np.arctan2(y, x)
             compined_heading = heading + error_relative_heading
             step_x = np.cos(roll) * K * (error_vector * np.cos(compined_heading))
             step_y = np.cos(pitch) * K * (error_vector * np.sin(compined_heading))
