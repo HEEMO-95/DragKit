@@ -245,29 +245,25 @@ def align():
     K = 0.001
 
     while not done:
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        speed_vector= np.sqrt(nav.vx**2 + nav.vy**2)
+        Attitude = master.recv_match(type='AHRS2', blocking=True)
+        heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
 
         try:
             x, y = get_data()
-            step_vector = np.sqrt(x**2 + y**2)
+            error_vector = np.sqrt(x**2 + y**2)
+            
         except:
             done = True
             return 'lost'
+        
         else:
-            Attitude = master.recv_match(type='AHRS2', blocking=True)
-            heading = Attitude.yaw
-            pitch = Attitude.pitch
-            roll = Attitude.roll
 
-            step_relative_heading = np.arctan2(y, x)
-            compined_heading = heading + step_relative_heading
-
-            nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-            current_vx, current_vy = float(nav.vx), float(nav.vy)
-            speed_vector= np.sqrt(current_vx**2 + current_vy**2)
-
-            step_x = np.cos(roll) * K * (step_vector * np.cos(compined_heading))
-            step_y = np.cos(pitch) * K * (step_vector * np.sin(compined_heading))
-
+            error_relative_heading = np.arctan2(y, x)
+            compined_heading = heading + error_relative_heading
+            step_x = np.cos(roll) * K * (error_vector * np.cos(compined_heading))
+            step_y = np.cos(pitch) * K * (error_vector * np.sin(compined_heading))
             step_vector = np.sqrt(step_x**2 + step_y**2)
 
             if speed_vector != step_vector :

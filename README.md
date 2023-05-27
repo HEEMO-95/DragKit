@@ -149,37 +149,27 @@ With the aid of computer vision, a camera can see and identify a land mark and h
 
 The align action:
 ``` python
-def align():
-
-    #  setup
-    done = False
-    flight_mode('GUIDED')
-    K = 0.001
-
-    #  void
     while not done:
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        speed_vector= np.sqrt(nav.vx**2 + nav.vy**2)
+        Attitude = master.recv_match(type='AHRS2', blocking=True)
+        heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
 
         try:
             x, y = get_data()
-            step_vector = np.sqrt(x**2 + y**2)
+            error_vector = np.sqrt(x**2 + y**2)
+            
         except:
             done = True
             return 'lost'
+        
         else:
-            Attitude = master.recv_match(type='AHRS2', blocking=True)
-            heading = Attitude.yaw
-            pitch = Attitude.pitch
-            roll = Attitude.roll
 
-            step_relative_heading = np.arctan2(y, x)
-            compined_heading = heading + step_relative_heading
-
-            nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-            current_vx, current_vy = float(nav.vx), float(nav.vy)
-            speed_vector= np.sqrt(current_vx**2 + current_vy**2)
-
-            step_x = np.cos(roll) * K * (step_vector * np.cos(compined_heading))
-            step_y = np.cos(pitch) * K * (step_vector * np.sin(compined_heading))
+            error_relative_heading = np.arctan2(y, x)
+            compined_heading = heading + error_relative_heading
+            step_x = np.cos(roll) * K * (error_vector * np.cos(compined_heading))
+            step_y = np.cos(pitch) * K * (error_vector * np.sin(compined_heading))
+            step_vector = np.sqrt(step_x**2 + step_y**2)
 
             if speed_vector != step_vector :
                 set_vel_glob(step_x, step_y)
@@ -187,6 +177,7 @@ def align():
             if abs(speed_vector - step_vector) <= 0.1:
                 done = True
                 return 'aligned'
+                
 ``` 
 its important to align the opject relative heading to the drone with the heading of the drone itself, as the speeds are adjusted in the (local frame) of the drone
 and ofcouse, inform the user if the aircraft is completely allinged or the reading of the opject position has lost.
