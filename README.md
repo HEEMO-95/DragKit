@@ -149,6 +149,12 @@ With the aid of computer vision, a camera can see and identify a land mark and h
 
 The align action:
 ``` python
+def align():
+
+    flight_mode('GUIDED')
+    K = 0.001
+    done = False
+    
     while not done:
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         speed_vector= np.sqrt(nav.vx**2 + nav.vy**2)
