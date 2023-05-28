@@ -85,7 +85,6 @@ def do_stop():
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         current_vx, current_vy = float(nav.vx) , float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy**2)
-        print(f'{speed_vector}, {action}')
         if speed_vector < 0.5 : 
             action = 'stopped'
             done = True
