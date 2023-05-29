@@ -57,7 +57,7 @@ Example of sending takeoff command to aircraft
 def takeoff_command(alt: int):
     Drone.mav.command_long_send(Drone.target_system, Drone.target_component,
                             mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0,
-                            0,0,0,0,0,0,  # empty target:
+                            0,0,0,0,0,0,  # non-used enums :
                             alt)  # altitude target:
 
 takeoff_command(50)  # takeoff to 50 meter
