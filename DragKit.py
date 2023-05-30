@@ -12,7 +12,7 @@ master = mavutil.mavlink_connection('udpin:0.0.0.0:14551')  # mavproxy.py --out=
 master.wait_heartbeat()
 
 
-def set_pos_local_ned(front:int, right:int, pos_alt:int, yaw:float=1):
+def set_pos_local(front:int, right:int, pos_alt:int, yaw:float=1):
 
     if yaw == 1:
         type_mask=(0b110111111000)
@@ -25,8 +25,8 @@ def set_pos_local_ned(front:int, right:int, pos_alt:int, yaw:float=1):
         type_mask,  # control option
         front,  # meters in front of the airplane
         right,  # meters right of the airplane
-        pos_alt,  # meters NEDown , -negative- value for ^upward^ height
-        0,  # velocity in x direction type masking ingore this
+        pos_alt ,  # meters NEDown , -negative- value for ^upward^ height
+        0,  # velocity in x direction type masking ignore this
         0,  # velocity in y direction
         0,  # velocity in z direction
         0, 0, 0, # accelartions (not supported)
@@ -53,14 +53,21 @@ def set_vel_local_ned(vel_x:float, vel_y:float):
     ))
 
 
-def set_pos_glob(LAT:int, LON:int, ALT:float):
+def set_pos_glob(LAT:int, LON:int, ALT:float, yaw = 1):
+
+
+    if yaw == 1:
+        type_mask=(0b110111111000)
+
+    else:
+        type_mask=(0b010111111000)
 
     master.mav.send(mavutil.mavlink.MAVLink_set_position_target_global_int_message(
         10, master.target_system, master.target_component,
         mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, # refrance frame option
-        (0b110111111000),  # control option blocks all and take pos int type
+        type_mask,  # control option blocks all and take pos int type
         LAT,  # Latitude
-        LON ,  # Longitude
+        LON,  # Longitude
         ALT,  # in meters, +postive+ for ^upward^ height
         0,  # velocity in x direction type masking ingore this
         0,  # velocity in y direction
@@ -206,7 +213,7 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
             pos_x = pos_x + (error_vector* np.cos(compined_heading))
             pos_y = pos_y + (error_vector* np.sin(compined_heading))
             print(f' x = {pos_x}, y = {pos_y}')
-            set_pos_local_ned(pos_x,pos_y,pos_z, yaw)
+            set_pos_local(pos_x,pos_y,pos_z, yaw)
             move = True
 
         if speed_vector > 1:
@@ -217,11 +224,11 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
                 move = True
 
 
-def go_back(point=(0,0,20),yaw=0):
+def go_to_local(point=(0,0,20),yaw=1):
 
-    x , y , z = point[0], point[1], point[2]
+    x , y , z = point[0], point[1], point[2] * -1
     flight_mode('GUIDED')
-    set_pos_local_ned(x,y,z,yaw)
+    set_pos_local(x,y,z,yaw)
     done = False
     o_time = time.time()
     while not done:
@@ -232,13 +239,35 @@ def go_back(point=(0,0,20),yaw=0):
         if speed_vector > 1 or time.time() - o_time > 5:
             mav= master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
             wp_dist = mav.wp_dist
-
+            o_time = time.time()
             if wp_dist == 0 :
                 done = True
                 action = 'got_back'
                 return action
 
-      
+
+def go_to_glob(point=(0,0,-20),yaw=1):
+
+    x , y , z = int(point[0]*1e7), int(point[1]*1e7), point[2]
+    flight_mode('GUIDED')
+    set_pos_glob(x,y,z,yaw)
+    done = False
+    o_time = time.time()
+    while not done:
+        nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+        current_vx, current_vy = float(nav.vx), float(nav.vy)
+        speed_vector= np.sqrt(current_vx**2 + current_vy **2)
+
+        if speed_vector > 1 or time.time() - o_time > 5:
+            mav= master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
+            wp_dist = mav.wp_dist
+            o_time = time.time()
+            if wp_dist == 0 :
+                done = True
+                action = 'got_back'
+                return action
+
+
 def align():
     done = False
     flight_mode('GUIDED')
