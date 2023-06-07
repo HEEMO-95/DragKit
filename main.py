@@ -11,6 +11,15 @@ def m1(seq_ind):
     1- go to the waypoints
     2- return True if all waypoints are visited
     """
+
+    ''' IBRAHEEM:
+            didnt quite understand the part above but here is the thing :
+            cannot resume flightplan from a specfic waypoint to specific waypoint
+            flight plan sequance are rigid
+
+            we can let the drone fly a pre-defined route and stop and allign when a new opject is identified
+            much simpler and less room for unexpectations'''
+
     while True:
         mission = master.recv_match(type='MISSION_ITEM_REACHED', blocking=True)
         seq = mission.seq
@@ -28,6 +37,11 @@ def m2(detect_obj):
 
     A function that do the folowing:
     1- go to object detection area
+
+            '''IBRAHEEM:
+    "1- go to object detection area" < cannot
+                better wait for mission squance to reach the detection area, detection area waypoint must be known'''
+
     2- looking for objects
     3- return the True if an object is detected
     """
@@ -87,7 +101,8 @@ objs = []
 num_bottels = 5
 c = 0
 while True:
-
+    '''IBRAHEEM :   why we need to keep track of number of bottles? xD
+                    we can just keep track of visted opjects list length'''
     if c == 0:
         m1(wp_seq)
     
@@ -104,3 +119,5 @@ while True:
             c = 0
             continue
 # landing
+
+''' keep it up ! '''
