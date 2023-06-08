@@ -1,4 +1,5 @@
 from DragKit import *
+from AI import object_detection
 
 def m1(seq_ind):
     """
@@ -19,19 +20,19 @@ def m1(seq_ind):
     return True
 
 
-def m2(detect_obj):
+def m2(detect_obj,objs):
     """
     args:
         detect_obj: a function that detect the objects
     return:
-        obj: the detected object
+        True: If the Object is detected
 
     A function that do the folowing:
     1- go to object detection area
     2- looking for objects
     3- return the True if an object is detected
     """
-    #if the drone in obj detection area return True
+    #if the drone in obj detection area
 
     #else go to obj detection area
 
@@ -43,7 +44,7 @@ def m2(detect_obj):
     while True:
         frame=None
         obj = detect_obj(frame)
-        if obj != []:
+        if obj != [] or obj not in objs:
             break
     return True
 
@@ -69,7 +70,8 @@ def m3(detect_obj):
 
 def m4():
     """
-    
+    A function will do the folowing:
+    1- Air drop
     """
     pass
 
@@ -81,16 +83,14 @@ def m5():
     pass
 
 wp_seq = None
-take_off = None
-detect_obj = None
 objs = []
-num_bottels = 5
+detect_obj = object_detection
+num_bottels = 3
 c = 0
-while True:
 
+while True:
     if c == 0:
-        m1(wp_seq)
-    
+        m1(wp_seq)    
     m2(detect_obj)
     objs.append(m3(detect_obj))   
     m4()
@@ -103,4 +103,3 @@ while True:
         else:
             c = 0
             continue
-# landing
