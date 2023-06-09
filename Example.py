@@ -19,16 +19,19 @@ from AI import *
 
 vid = cv2.VideoCapture('/dev/video0')
 print('start capturing')
-while(True): 
-    # Capture the video frame
-    # by frame
-    ret, frame = vid.read()
-    c = color_detection(frame)
-    print(frame.shape)
-    print(c)
-    #Display the resulting frame
-    cv2.imshow('frame', frame)
-      
+while(True):
+    try: 
+        # Capture the video frame
+        # by frame
+        ret, frame = vid.read()
+        c,a = color_detection(frame)
+        print(frame.shape)
+        print(a)
+        print(c)
+        #Display the resulting frame
+        cv2.imshow('frame', frame)
+    except:
+        continue
     # the 'q' button is set as the
     # quitting button you may use any
     # desired button of your choice

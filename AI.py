@@ -3,19 +3,18 @@ import cv2
 import numpy as np
 import math
 from collections import Counter
-import matplotlib.pyplot as plt
 import pytesseract
 
-colors ={'green':(np.array([60,127,127]) , np.array([90,255,255])),
-'red':(np.array([0,127,127]) , np.array([30,255,255])),
-'blue':(np.array([120,127,127]) , np.array([150,255,255])),
-'yellow':(np.array([30,127,127]) , np.array([60,255,255])),
-'white':(np.array([0,0,255]) , np.array([255,255,255])),
-'black':(np.array([0,0,0]) , np.array([255,255,0])),
-'gray':(np.array([0,0,0]) , np.array([0,0,255])),
-'purple':(np.array([130,0,0]) , np.array([140,255,255])),
-'brown':(np.array([10,127,127]) , np.array([20,255,255])),
-'orange':(np.array([8,127,127]) , np.array([22,255,255]))}
+colors ={'green':(np.array([60,2,2]) , np.array([90,200,200])),
+'red':(np.array([0,2,127]) , np.array([30,200,200])),
+'blue':(np.array([100,2,2]) , np.array([150,200,200])),
+'yellow':(np.array([30,2,2]) , np.array([60,200,200])),
+'white':(np.array([0,0,255]) , np.array([200,200,255])),
+'black':(np.array([0,0,1]) , np.array([255,255,1])),
+'gray':(np.array([0,0,0]) , np.array([0,0,200])),
+'purple':(np.array([130,2,0]) , np.array([140,200,200])),
+'brown':(np.array([10,2,2]) , np.array([20,200,200])),
+'orange':(np.array([8,2,2]) , np.array([22,200,200]))}
 
 def crop_image(img, conts):
     images = []
@@ -287,7 +286,8 @@ def color_detection(frame):
         v = color_arr[2]
         if (h < val[1][0]) and (h > val[0][0]) and (s < val[1][1]) and (s > val[0][1]) and (v < val[1][2]) and (v > val[0][2]):
             color = k
-    return color
+            break
+    return color,color_arr
 	
 def alphabetic_detection(img):
     roi = get_roi(img)
