@@ -77,7 +77,7 @@ def m3(detect_obj,vid_cap):
     while True:
         frame=vid_cap.read()
         # code for alignment
-        obj = detect_obj(frame)
+        obj,probs = detect_obj(frame)
         x,y=obj.xy
         #end of alignment
         break

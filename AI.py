@@ -5,6 +5,13 @@ import math
 from collections import Counter
 import matplotlib.pyplot as plt
 import pytesseract
+from ultralytics import YOLO
+
+path = (
+    "C:/Users/ksa_j/Documents/Codes/VS/python/YOLO/runs/detect/train/weights/best.onnx"
+)
+
+model = YOLO(path)
 
 colors ={'green':(np.array([60,127,127]) , np.array([90,255,255])),
 'red':(np.array([0,127,127]) , np.array([30,255,255])),
@@ -294,12 +301,22 @@ def alphabetic_detection(img):
     charc = id_ocr(roi)
     return charc
 
-def yolo():
-    pass
+def yolo(frame):
+    results = model.predict(source=frame)
+    objs = []
+    for result in results:
+        x1, y1, x2, y2 = result.boxes.data.tolist()[0][:4]
+        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+        cropped_box = frame[y1:y2, x1:x2]
+        x,y = ((x2+x1)/2),((y2+y1)/2)
+        objs.append([cropped_box,result.probs,result.cls,x,y])
+    obj = max(objs, key = lambda x : x[1])
+    return obj
 
 def object_detection(frame):
-    img,shape,x,y = yolo(frame)
+
+    img,probs,shape,x,y = yolo(frame)
     color = color_detection(img)
     charc = alphabetic_detection(img)
     obj = Object(color,shape,charc,(x,y))
-    return obj
+    return obj,probs
