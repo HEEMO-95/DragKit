@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 class Object():
     def __init__(self,color,shape,alphabet,xy):
         self.color = color
@@ -8,7 +7,7 @@ class Object():
     
     def __eq__(self,x):      
         return (self.color == x.color) and (self.shape == x.shape) and (self.alphabet == x.alphabet)
-=======
+""" 
 ''' this is by all means not the way to do it
 but its a step in the dircetion to reach a common ground
 i wait for your feedback'''
@@ -58,3 +57,4 @@ if len(visted_opjects) == 5:
     '''change mode to RTL (return to land) mission done
     otherwise FailsSafe will land in the case of mission wasnt done'''  
 >>>>>>> 5aa49a1218e16317da8461881b73e046581c96dd
+ """

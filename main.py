@@ -1,5 +1,6 @@
 from DragKit import *
 from AI import object_detection
+import serial
 
 def m1(seq_ind):
     """
@@ -29,7 +30,7 @@ def m1(seq_ind):
     return True
 
 
-def m2(detect_obj,objs):
+def m2(detect_obj,objs,vid_cap):
     """
     args:
         detect_obj: a function that detect the objects
@@ -56,13 +57,14 @@ def m2(detect_obj,objs):
 
     
     while True:
-        frame=None
+        frame=vid_cap.read()
         obj = detect_obj(frame)
-        if obj != [] or obj not in objs:
-            break
-    return True
+        if obj != []:
+            for o in obj:
+                if o not in objs:
+                    return True
 
-def m3(detect_obj):
+def m3(detect_obj,vid_cap):
     """
     args:
         detect_obj: a function to detect the object
@@ -73,7 +75,7 @@ def m3(detect_obj):
     2- correction of object info
     """
     while True:
-        frame=None
+        frame=vid_cap.read()
         # code for alignment
         obj = detect_obj(frame)
         x,y=obj.xy
@@ -82,12 +84,13 @@ def m3(detect_obj):
     obj = detect_obj(frame)
     return obj
 
-def m4():
+def m4(slot_num,arduino):
     """
     A function will do the folowing:
     1- Air drop
     """
-    pass
+    arduino.write(bytes(str(slot_num),encoding='utf-8'))
+    return True
 
 def m5():
     """
@@ -101,19 +104,16 @@ objs = []
 detect_obj = object_detection
 num_bottels = 3
 c = 0
-<<<<<<< HEAD
-
+arduino = serial.Serial("/dev/ttyUSB0", 57600)
+slot_map = {('red','circle','A'):'1'}
 while True:
-=======
-while True:
-    '''IBRAHEEM :   why we need to keep track of number of bottles? xD
-                    we can just keep track of visted opjects list length'''
->>>>>>> 5aa49a1218e16317da8461881b73e046581c96dd
     if c == 0:
-        m1(wp_seq)    
-    m2(detect_obj)
-    objs.append(m3(detect_obj))   
-    m4()
+        m1(wp_seq)
+
+    m2(detect_obj,objs)
+    objs.append(m3(detect_obj)) 
+    slot_num = slot_map[(objs[-1].color,objs[-1].shape,objs[-1].alphabet)]
+    m4(slot_num,arduino)
     c = c + 1
     
     if c == num_bottels:
@@ -123,9 +123,7 @@ while True:
         else:
             c = 0
             continue
-<<<<<<< HEAD
-=======
+
 # landing
 
-''' keep it up ! '''
->>>>>>> 5aa49a1218e16317da8461881b73e046581c96dd
+
