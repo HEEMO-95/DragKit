@@ -5,11 +5,14 @@ this file contains mavlink commands and messages to be imported as functions
 and a compnations of commands called (actions)
 '''
 import time
+import socket
 import numpy as np
 from pymavlink import mavutil
 
 master = mavutil.mavlink_connection('udpin:0.0.0.0:14551')  # mavproxy.py --out=udp:localhost:14551
 master.wait_heartbeat()
+socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 
 def MAV_CMD_NAV_WAYPOINT(Latitude:int, Longitude:int ,Altitude: int):
     master.mav.command_long_send(master.target_system, master.target_component,
@@ -191,22 +194,28 @@ def do_stop():
                 return action, start_point, stop_point
 
       
-def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
+def do_scan(port, scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
     i = 0
     action = 'do_scan'
     flight_mode('GUIDED')
     print(action)
-    move = False
+    move = True
     nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
     pos_x, pos_y, pos_z = float(nav.x), float(nav.y), float(nav.z)
     AHRS2 = master.recv_match(type='AHRS2', blocking=True)
     heading = AHRS2.yaw
     done = False
+
+    HOST = 'localhost'
+    socket.connect((HOST, port))
+    print('scan connected')
+
     while not done:
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)  # action should have end conditions
         current_vx, current_vy = float(nav.vx), float(nav.vy)
         speed_vector= np.sqrt(current_vx**2 + current_vy **2)
-
+        message = socket.recv(1024).decode('utf-8')
+           
         try:
             scan = scans[i]
         except:
@@ -214,8 +223,18 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
             action = 'scan_done'   # loop breaker
             return action
         
+        for data in message:
+            data = message.split(',')
+            state = data[0]
+            if state == 'found':
+                done = True
+                move = False
+                action = 'scan_done'
+                pause_continue(1)
+                return action
+        
         print(f'{speed_vector}, {action}, {i}')
-        if not move :
+        if  move :
             error = scan
             error_vector= np.sqrt(error[0]**2 + error[1]**2)
             error_relative_heading= np.arctan2(error[1], error[0])
@@ -224,7 +243,7 @@ def do_scan(scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
             pos_y = pos_y + (error_vector* np.sin(compined_heading))
             print(f' x = {pos_x}, y = {pos_y}')
             set_pos_local(pos_x,pos_y,pos_z, yaw)
-            move = True
+            move = False
 
         if speed_vector > 1:
             mav = master.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=True)
@@ -278,20 +297,27 @@ def go_to_glob(point=(0,0,-20),yaw=1):
                 return action
 
 
-def align():
+def align(port):
     done = False
     flight_mode('GUIDED')
     K = 0.001
-
+    HOST = 'localhost'
+    PORT = port  # state socket port
+    socket.connect((HOST, PORT))
+    print('alingment connected')
+    
     while not done:
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
         speed_vector= np.sqrt(nav.vx**2 + nav.vy**2)
         Attitude = master.recv_match(type='AHRS2', blocking=True)
         heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
-
+        
         try:
-            x, y = get_data()
-            error_vector = np.sqrt(x**2 + y**2)
+            message = socket.recv(1024).decode('utf-8')
+            for data in message:
+                data = message.split(',')
+                x,y = data[0], data[1]
+                error_vector = np.sqrt(x**2 + y**2)
             
         except:
             done = True
