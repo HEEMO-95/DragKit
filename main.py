@@ -53,9 +53,7 @@ def m2(detect_obj,objs,vid_cap):
 
     #end of go to obj detection area code
 
-    #end if
-
-    
+    #end if   
     while True:
         frame=vid_cap.read()
         obj = detect_obj(frame)
@@ -81,7 +79,7 @@ def m3(detect_obj,vid_cap):
         x,y=obj.xy
         #end of alignment
         break
-    obj = detect_obj(frame)
+    obj,probs = detect_obj(frame)
     return obj
 
 def m4(slot_num,arduino):

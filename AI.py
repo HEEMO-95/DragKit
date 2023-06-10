@@ -7,16 +7,14 @@ import matplotlib.pyplot as plt
 import pytesseract
 from ultralytics import YOLO
 
-path = (
-    "C:/Users/ksa_j/Documents/Codes/VS/python/YOLO/runs/detect/train/weights/best.onnx"
-)
+path = "D:/Users/TFgam3r/Desktop/Drag/DragKit/best.onnx"
 
-model = YOLO(path)
+model = YOLO(path,task = 'detect')
 
-colors ={'green':(np.array([60,127,127]) , np.array([90,255,255])),
-'red':(np.array([0,127,127]) , np.array([30,255,255])),
-'blue':(np.array([120,127,127]) , np.array([150,255,255])),
-'yellow':(np.array([30,127,127]) , np.array([60,255,255])),
+colors ={'green':(np.array([60,50,50]) , np.array([90,250,250])),
+'red':(np.array([0,50,50]) , np.array([30,250,250])),
+'blue':(np.array([120,50,50]) , np.array([150,250,250])),
+'yellow':(np.array([30,50,50]) , np.array([60,250,250])),
 'white':(np.array([0,0,255]) , np.array([255,255,255])),
 'black':(np.array([0,0,0]) , np.array([255,255,0])),
 'gray':(np.array([0,0,0]) , np.array([0,0,255])),
@@ -261,6 +259,8 @@ def get_roi(img):
                     grandsons.append(contours[grandson_i])
                     grandson_i = hierarchy[0][grandson_i][0]
                 child_i = hierarchy[0][child_i][0]
+    if grandsons == [] :
+        return img
     max_grandson = max(grandsons, key=cv2.contourArea)
     x, y, w, h = add_offset_to_contour(max_grandson, 30)
 
@@ -305,18 +305,21 @@ def yolo(frame):
     results = model.predict(source=frame)
     objs = []
     for result in results:
-        x1, y1, x2, y2 = result.boxes.data.tolist()[0][:4]
-        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-        cropped_box = frame[y1:y2, x1:x2]
-        x,y = ((x2+x1)/2),((y2+y1)/2)
-        objs.append([cropped_box,result.probs,result.cls,x,y])
+        for i in result.boxes.data.tolist():
+            x1, y1, x2, y2 = i[:4]
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+            cropped_box = frame[y1:y2, x1:x2]
+            x,y = ((x2+x1)/2),((y2+y1)/2)
+            objs.append([cropped_box,i[4],i[5],x,y])
     obj = max(objs, key = lambda x : x[1])
     return obj
 
 def object_detection(frame):
-
+    #pytesseract.pytesseract.tesseract_cmd = r'C:/Users/TFgam/AppData/Local/Tesseract-OCR/tesseract.exe'
+    cls_names = model.names
+    print(cls_names)
     img,probs,shape,x,y = yolo(frame)
     color = color_detection(img)
-    charc = alphabetic_detection(img)
-    obj = Object(color,shape,charc,(x,y))
+    #charc = alphabetic_detection(img)
+    obj = Object(color,int(shape),'charc',(x,y))
     return obj,probs
