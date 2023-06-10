@@ -66,7 +66,6 @@ def set_vel_local_ned(vel_x:float, vel_y:float):
 
 def set_pos_glob(LAT:int, LON:int, ALT:float, yaw = 1):
 
-
     if yaw == 1:
         type_mask=(0b110111111000)
 
