@@ -11,7 +11,18 @@ from pymavlink import mavutil
 master = mavutil.mavlink_connection('udpin:0.0.0.0:14551')  # mavproxy.py --out=udp:localhost:14551
 master.wait_heartbeat()
 
-
+def MAV_CMD_NAV_WAYPOINT(Latitude:int, Longitude:int ,Altitude: int):
+    master.mav.command_long_send(master.target_system, master.target_component,
+        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0,
+        0,  # Hold time. (ignored by fixed wing, time to stay at waypoint for rotary wing)
+        5,  # Acceptance radius (if the sphere with this radius is hit, the waypoint counts as reached)
+        0,  # 0 to pass through the WP, if > 0 radius to pass by WP. Positive value for clockwise orbit, negative value for counter-clockwise orbit. Allows trajectory control.
+        nan, #Desired yaw angle at waypoint (rotary wing). NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.).
+        Latitude,
+        Longitude,
+        Altitude) # m)
+    
+    
 def set_pos_local(front:int, right:int, pos_alt:int, yaw:float=1):
 
     if yaw == 1:
