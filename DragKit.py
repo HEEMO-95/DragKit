@@ -1,9 +1,10 @@
 '''
-author name : heemo
+author name : ibraheem
 author email : ibraheem.zhrany@gmail.com
 this file contains mavlink commands and messages to be imported as functions
-and a compnations of commands called (actions)
+and a compnations of commands called 'actions'
 '''
+
 import time
 import socket
 import numpy as np
@@ -181,7 +182,7 @@ def do_stop():
         done = False
         pause_continue(0)
         nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-        start_point = float(nav.x), float(nav.y), float(nav.z)
+        break_start = float(nav.x), float(nav.y), float(nav.z)
         while not done:
             nav = master.recv_match(type='LOCAL_POSITION_NED', blocking=True)
             current_vx, current_vy = float(nav.vx) , float(nav.vy)
@@ -190,8 +191,8 @@ def do_stop():
             if speed_vector < 0.5 : 
                 action = 'stopped'
                 done = True
-                stop_point = (nav.x, nav.y, nav.v)
-                return action, start_point, stop_point
+                break_end = (nav.x, nav.y, nav.z)
+                return action, break_start, break_end
 
       
 def do_scan(port, scans = [(-5,-5),(5,-5),(5,5),(-5,5)], yaw = 0):
@@ -313,11 +314,8 @@ def align(port):
         heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
         
         try:
-            message = socket.recv(1024).decode('utf-8')
-            for data in message:
-                data = message.split(',')
-                x,y = data[0], data[1]
-                error_vector = np.sqrt(x**2 + y**2)
+            x,y = socket.recv(1024).decode('utf-8').split(',')
+            error_vector = np.sqrt(x**2 + y**2)
             
         except:
             done = True
@@ -335,12 +333,10 @@ def align(port):
                 set_vel_glob(step_x, step_y)
 
             if abs(speed_vector - step_vector) <= 0.1:
+                socket.close()
                 done = True
                 return 'aligned'
 
-
-def get_data(x=1 ,y=1):
-    return x, y
 
 
 def resume():
