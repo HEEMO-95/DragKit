@@ -144,6 +144,7 @@ def flight_mode_CMD(mode: str):
                             mode_id,  # mode slsected
                             0,0,0,0,0,0)
 
+
 def arm_command(arm: int):
     master.mav.command_long_send(master.target_system, master.target_component,
                             mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0,
@@ -336,7 +337,6 @@ def align(port):
                 socket.close()
                 done = True
                 return 'aligned'
-
 
 
 def resume():
