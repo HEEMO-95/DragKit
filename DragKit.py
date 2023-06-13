@@ -305,7 +305,8 @@ def align(port):
     K = 0.001
     HOST = 'localhost'
     PORT = port  # state socket port
-    socket.connect((HOST, PORT))
+    mysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    mysocket.connect((HOST, PORT))
     print('alingment connected')
     
     while not done:
@@ -316,6 +317,7 @@ def align(port):
         
         try:
             x,y = socket.recv(1024).decode('utf-8').split(',')
+            mysocket.send('align'.encode('utf-8'))
             error_vector = np.sqrt(x**2 + y**2)
             
         except:
@@ -336,6 +338,7 @@ def align(port):
             if abs(speed_vector - step_vector) <= 0.1:
                 socket.close()
                 done = True
+                mysocket.send('aligned'.encode('utf-8'))
                 return 'aligned'
 
 
