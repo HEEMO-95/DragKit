@@ -302,7 +302,7 @@ def go_to_glob(point=(0,0,-20),yaw=1):
 def align(port):
     done = False
     flight_mode('GUIDED')
-    K = 0.001
+    K = 0.01
     HOST = 'localhost'
     PORT = port  # state socket port
     mysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -317,7 +317,10 @@ def align(port):
         
         try:
             print()
-            msg = mysocket.recv(1024).decode('utf-8')
+            msg = mysocket.recv(1024).decode('utf-8').split('#')
+            for data in msg:
+                if data != '':
+                    msg = data
             print(msg)
             x,y = msg.split(',')
             mysocket.send('align'.encode('utf-8'))
