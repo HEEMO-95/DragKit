@@ -6,7 +6,8 @@ import time
 import numpy as np
 
 HOST = 'localhost'
-PORT = 1995
+PORT1 = 1995
+PORT2 = 1416
 
 objs_list = {
     'circle':
@@ -77,14 +78,20 @@ cap = cv2.VideoCapture('/dev/video0')
 detector = Detector()
 
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((HOST, PORT))
-server.listen(5)
+server1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server1.bind((HOST, PORT1))
+server2.bind((HOST, PORT2))
+
+server1.listen(5)
+server2.listen(5)
+
 connected = False
 
 while True:
     connected = False
-    mav_socket, address = server.accept()
+    mav_socket, address = server1.accept()
     connected = True
     print(f'connected to {address}')
     mode = 'ens'
@@ -111,6 +118,7 @@ while True:
                         break
 
             if mode == 'al': 
+                ali_socket, address = server2.accept()
                 state = None           
                 while True:
                     frame = cap.read()
@@ -125,8 +133,13 @@ while True:
                             c = color_detection(ob[1])
                             temp = objs_list.get(ob[0],dict()).get(c,None)
                             if temp != None:
-                                mav_socket.send(str([ob[-2],ob[-1]]).encode('utf-8'))                     
-                    state = mav_socket.recv(1024).decode('utf-8')           
+                                ali_socket.send(str([ob[-2],ob[-1]]).encode('utf-8'))                     
+                    state = ali_socket.recv(1024).decode('utf-8').split('#')
+                    for data in state:
+                        if data != '':
+                            state = data
+                            break
+
                     if state == 'aligned':
                         mode = 'ad'
                         break
@@ -134,7 +147,8 @@ while True:
             if mode == 'ad':          
                 time.sleep(2)
                 color = color_detection(ob[1])
-                charc = alphabetic_detection(ob[1])
+                # charc = alphabetic_detection(ob[1])
+                charc = 'A'
                 shape,color,charc,idx = get_winch(ob[0],color,charc)
                 mav_socket.send(str(idx).encode('utf-8'))
                 del objs_list[shape][color][charc]

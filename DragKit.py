@@ -316,12 +316,13 @@ def align(port):
         heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
         
         try:
-            x,y = socket.recv(1024).decode('utf-8').split(',')
+            x,y = mysocket.recv(1024).decode('utf-8').split(',')
             mysocket.send('align'.encode('utf-8'))
             error_vector = np.sqrt(x**2 + y**2)
             
         except:
             done = True
+            mysocket.close()
             return 'lost'
         
         else:
@@ -336,9 +337,9 @@ def align(port):
                 set_vel_glob(step_x, step_y)
 
             if abs(speed_vector - step_vector) <= 0.1:
-                socket.close()
                 done = True
-                mysocket.send('aligned'.encode('utf-8'))
+                mysocket.send('aligned#'.encode('utf-8'))
+                mysocket.close()
                 return 'aligned'
 
 
