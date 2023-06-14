@@ -316,7 +316,10 @@ def align(port):
         heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
         
         try:
-            x,y = mysocket.recv(1024).decode('utf-8').split(',')
+            print()
+            msg = mysocket.recv(1024).decode('utf-8')
+            print(msg)
+            x,y = msg.split(',')
             mysocket.send('align'.encode('utf-8'))
             error_vector = np.sqrt(x**2 + y**2)
             
