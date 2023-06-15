@@ -119,7 +119,8 @@ while True:
 
             if mode == 'al': 
                 ali_socket, address = server2.accept()
-                state = None           
+                state = None
+                c=0         
                 while True:
                     frame = cap.read()
                     objs = detector.predict(frame=frame)
@@ -133,7 +134,12 @@ while True:
                             c = color_detection(ob[1])
                             temp = objs_list.get(ob[0],dict()).get(c,None)
                             if temp != None:
-                                ali_socket.send(str([ob[-2],ob[-1]]).encode('utf-8'))                     
+                                c=0
+                                ali_socket.send(str([ob[-2],ob[-1]]).encode('utf-8'))
+                            else:
+                                c=c+1
+                                ali_socket.send(str('fuck').encode('utf-8'))
+
                     state = ali_socket.recv(1024).decode('utf-8').split('#')
                     for data in state:
                         if data != '':
@@ -142,6 +148,10 @@ while True:
 
                     if state == 'aligned':
                         mode = 'ad'
+                        break
+                    if c == 10:
+                        mode = 'ans'
+                        ali_socket.send(str('mother_fuckern ').encode('utf-8'))
                         break
 
             if mode == 'ad':          
