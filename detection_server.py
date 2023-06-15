@@ -112,7 +112,7 @@ while True:
                             c = color_detection(obj[1])
                             temp = objs_list.get(obj[0],dict()).get(c,None)
                             if temp != None:
-                                mav_socket.send('detected'.encode('utf-8'))
+                                mav_socket.send('detected#'.encode('utf-8'))
                                 mode = 'al'
                                 break
                         break
@@ -166,7 +166,7 @@ while True:
                 mode == 'ens'
 
             if not objs_list:
-                mav_socket.send("mission_done".encode('utf-8'))
+                mav_socket.send("mission_done#".encode('utf-8'))
                         
         except:
             connected = False
