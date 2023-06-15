@@ -302,7 +302,7 @@ def go_to_glob(point=(0,0,-20),yaw=1):
 def align(port):
     done = False
     flight_mode('GUIDED')
-    K = 0.01
+    K = 0.005
     HOST = 'localhost'
     PORT = port  # state socket port
     mysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -316,33 +316,35 @@ def align(port):
         heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
         
         try:
-            print()
             msg = mysocket.recv(1024).decode('utf-8').split('#')
             for data in msg:
                 if data != '':
                     msg = data
             print(msg)
-            x,y = msg.split(',')
-            mysocket.send('align'.encode('utf-8'))
+            msg = msg.split(',')
+            x, y = int(msg[0]), int(msg[1])
+            mysocket.send('align#'.encode('utf-8'))
             error_vector = np.sqrt(x**2 + y**2)
-            
+
         except:
+            print('lost')
             done = True
             mysocket.close()
             return 'lost'
         
         else:
-
+            
             error_relative_heading = np.arctan2(y, x)
             compined_heading = heading + error_relative_heading
-            step_x = np.cos(roll) * K * (error_vector * np.cos(compined_heading))
-            step_y = np.cos(pitch) * K * (error_vector * np.sin(compined_heading))
+            step_x = K * (error_vector * np.cos(compined_heading))
+            step_y = K * (error_vector * np.sin(compined_heading))
             step_vector = np.sqrt(step_x**2 + step_y**2)
-
+            print('control', speed_vector,step_vector)
             if speed_vector != step_vector :
                 set_vel_glob(step_x, step_y)
 
-            if abs(speed_vector - step_vector) <= 0.1:
+            if abs(speed_vector - step_vector) < 0.01:
+                print('aligned',abs(speed_vector - step_vector))
                 done = True
                 mysocket.send('aligned#'.encode('utf-8'))
                 mysocket.close()
