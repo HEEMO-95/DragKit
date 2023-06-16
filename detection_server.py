@@ -4,6 +4,45 @@ import socket
 import time
 import numpy as np
 
+def stripper(data):
+    new_data = {}
+    for k, v in data.items():
+        if isinstance(v, dict):
+            v = stripper(v)
+        if not v in (u'', None, {}):
+            new_data[k] = v
+    return new_data
+
+def get_winch(shape,color,charc):
+    color_dict = objs_list.get(shape,None)
+    if color_dict == None:
+        return 'fuck','fuck','fuck','fuck'
+    
+    charc_dict = color_dict.get(color,None)
+
+    if charc_dict == None:
+        charc_dict = color_dict.get(list(color_dict.keys())[0])
+        idx = charc_dict.get(list(charc_dict.keys())[0])
+        charc = list(charc_dict.keys())[0]
+        color = list(color_dict.keys())[0]
+        return shape,color,charc,idx
+    
+    idx = charc_dict.get(charc,None)
+
+    if idx == None:
+        charc = list(charc_dict.keys())[0]
+        idx = charc_dict.get(list(charc_dict.keys())[0])
+        return shape,color,charc,idx
+    
+    return shape,color,charc,idx
+
+def objs_dis(objs,center):
+    arr = np.array([[obj[-2],obj[-1]] for obj in objs])
+    c = np.array(center)
+    diff = np.sqrt(np.sum((arr**2) - (c**2),axis=1))
+    return diff
+
+
 HOST = 'localhost'
 PORT1 = 3014
 PORT2 = 5016
@@ -43,35 +82,6 @@ objs_list = {
             }
         }
                }
-
-def get_winch(shape,color,charc):
-    color_dict = objs_list.get(shape,None)
-    if color_dict == None:
-        return 'fuck','fuck','fuck','fuck'
-    
-    charc_dict = color_dict.get(color,None)
-
-    if charc_dict == None:
-        charc_dict = color_dict.get(list(color_dict.keys())[0])
-        idx = charc_dict.get(list(charc_dict.keys())[0])
-        charc = list(charc_dict.keys())[0]
-        color = list(color_dict.keys())[0]
-        return shape,color,charc,idx
-    
-    idx = charc_dict.get(charc,None)
-
-    if idx == None:
-        charc = list(charc_dict.keys())[0]
-        idx = charc_dict.get(list(charc_dict.keys())[0])
-        return shape,color,charc,idx
-    
-    return shape,color,charc,idx
-
-def objs_dis(objs,center):
-    arr = np.array([[obj[-2],obj[-1]] for obj in objs])
-    c = np.array(center)
-    diff = np.sqrt(np.sum((arr**2) - (c**2),axis=1))
-    return diff
 
 #cap = cv2.VideoCapture('/dev/video0')
 cap = cv2.VideoCapture('/home/jetson/Desktop/F1.mp4')
@@ -168,11 +178,12 @@ while connected:
     if mode == 'ad':          
         time.sleep(2)
         color = color_detection(ob[1])
-        # charc = alphabetic_detection(ob[1])
+        charc = alphabetic_detection(ob[1])
         charc = 'A'
         shape,color,charc,idx = get_winch(ob[0],color,charc)
         mav_socket.send(str(idx).encode('utf-8'))
         del objs_list[shape][color][charc]
+        objs_list = stripper(objs_list)
         mav_socket.recv(1024).decode('utf-8')
         mode == 'ens'
 
