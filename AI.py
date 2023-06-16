@@ -275,13 +275,10 @@ def color_detection(frame):
     # Now convert back into uint8, and make original image
     center = np.uint8(center)
     res = center[label.flatten()]
-    #cv.imshow('00',res2)
-    #cv.waitKey(0)
-    #Scv.destroyAllWindows()
     _,count = np.unique(label.flatten(),return_counts=True)
     center_idx = np.argmax(count)
     color_arr = center[center_idx]
-    color = 'hhhhhh'
+    color = 'no_color'
     for k,val in colors.items():
         h = color_arr[0]
         s = color_arr[1]
