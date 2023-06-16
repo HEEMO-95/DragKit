@@ -12,6 +12,7 @@ from pymavlink import mavutil
 
 master = mavutil.mavlink_connection('udpin:0.0.0.0:14551')  # mavproxy.py --out=udp:localhost:14551
 master.wait_heartbeat()
+print('connected')
 socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 

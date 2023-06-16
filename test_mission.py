@@ -4,10 +4,10 @@ import numpy as np
 
 from pymavlink import mavutil
 
-master = mavutil.mavlink_connection('udpin:0.0.0.0:14551')  # mavproxy.py --out=udp:localhost:14551
+master = mavutil.mavlink_connection('udpin:0.0.0.0:14550')  # mavproxy.py --out=udp:localhost:14551
 master.wait_heartbeat()
 
-print('connected to mav')
+print('connected to mavlink')
 
 def set_vel_glob(vel_x:float, vel_y:float):
     master.mav.send(mavutil.mavlink.MAVLink_set_position_target_global_int_message(
@@ -93,7 +93,7 @@ PORT1 = 1995  # state socket port
 PORT2 = 1416
 mysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 mysocket.connect((HOST, PORT1))
-print('connected to server')
+print('connected to detection server')
 done = False
 
 message = mysocket.recv(1024).decode('utf-8')

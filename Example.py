@@ -1,44 +1,37 @@
-#from DragKit import *
-
-#a, start_point, stop_point = do_stop()
-
-#if a == 'stopped':
-#    a = go_back(start_point)
-
-#if a == 'got_back':
-#    do_scan()
 import subprocess
 import os
 import cv2
 from AI import *
-#os.system("sudo modprobe v4l2loopback exclusive_caps=1 max_buffer=2")
-#print('detected cameras')
-#e = subprocess.Popen(["gphoto2","--auto-detect"])
-#print('start the camera')
-#process = os.popen("gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video0")
+import time
 
-vid = cv2.VideoCapture('/dev/video0')
+path = "/home/jetson/Desktop/Dragkit/DRAG_Shape_detector/runs/detect/train/weights/best.pt"
+model = Detector(path)
+print('model loaded')
+vid = cv2.VideoCapture('/home/jetson/Desktop/Dragkit/F1.mp4')
 print('start capturing')
-while(True):
-    try: 
-        # Capture the video frame
-        # by frame
-        ret, frame = vid.read()
-        c,a = color_detection(frame)
-        print(frame.shape)
-        print(a)
-        print(c)
-        #Display the resulting frame
-        cv2.imshow('frame', frame)
-    except:
-        continue
-    # the 'q' button is set as the
-    # quitting button you may use any
-    # desired button of your choice
+objs = []  # Reuse the same list for object detections
+while vid.isOpened():
+    ret, frame = vid.read()
+    s = time.time()
+    objs.clear()  # Clear the list for new object detections
+    objs = model.predict(frame, stream=True)
+    for obj in objs:
+        print('-----------------------------------------')
+        print(obj[0], ',', obj[2], ',', obj[3], ',', obj[4])
+        color = color_detection(obj[1])
+        print(color)
+        charc = alphabetic_detection(obj[1])
+        print(charc)
+        print('-----------------------------------------')
+    # cv2.imshow('frame', frame)
+    e = time.time()
+    print('time elapsed: ', (e - s))
+
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-  	
-# After the loop release the cap object
+
+# After the loop, release the capture object
 vid.release()
 # Destroy all the windows
 cv2.destroyAllWindows()
+

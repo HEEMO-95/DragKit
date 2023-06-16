@@ -1,4 +1,3 @@
-from Object import Object
 import cv2
 import numpy as np
 import math
@@ -6,16 +5,17 @@ from collections import Counter
 import pytesseract
 from ultralytics import YOLO
 
-colors ={'green':(np.array([60,50,50]) , np.array([90,250,250])),
-'red':(np.array([0,50,50]) , np.array([30,250,250])),
-'blue':(np.array([120,50,50]) , np.array([150,250,250])),
-'yellow':(np.array([30,50,50]) , np.array([60,250,250])),
-'white':(np.array([0,0,255]) , np.array([255,255,255])),
-'black':(np.array([0,0,0]) , np.array([255,255,0])),
-'gray':(np.array([0,0,0]) , np.array([0,0,255])),
-'purple':(np.array([130,0,0]) , np.array([140,255,255])),
-'brown':(np.array([10,127,127]) , np.array([20,255,255])),
-'orange':(np.array([8,127,127]) , np.array([22,255,255]))}
+
+colors ={'green':(np.array([40,70,70]) , np.array([70,255,255])),
+'red':(np.array([0,70,70]) , np.array([10,255,255])),
+'blue':(np.array([100,70,70]) , np.array([130,255,255])),
+'yellow':(np.array([20,50,70]) , np.array([30,255,255])),
+'white':(np.array([0,0,204]) , np.array([180,51,255])),
+'black':(np.array([0,0,0]) , np.array([180,0,51])),
+'gray':(np.array([0,0,51]) , np.array([180,0,70])),
+'purple':(np.array([140,70,70]) , np.array([160,255,255])),
+'brown':(np.array([5,70,51]) , np.array([15,255,51])),
+'orange':(np.array([7,70,70]) , np.array([20,255,255]))}
 
 def crop_image(img, conts):
     images = []
@@ -165,9 +165,8 @@ def crop_around_center(image, width, height):
 def id_ocr(img):
     ocr_config = r'--oem 1 --psm 10 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     detected_ids = []
-    for angle in range(0, 360, 10):
+    for angle in range(0, 360, 60):
         rotated = rotate_image(img, angle)
-
         data = pytesseract.image_to_data(rotated, lang='eng', config=ocr_config, output_type='dict')
         conf = max(data['conf'])
         hci = data['conf'].index(conf)
@@ -176,9 +175,10 @@ def id_ocr(img):
             detected_ids.append(text)
     frequency = Counter(detected_ids)
     most_frequent = frequency.most_common(1)
-
-    most_conf = most_frequent[0][0]
-    return most_conf
+    if most_frequent:
+        most_conf = most_frequent[0][0]
+        return most_conf
+    return None
 
 
 def detect_ids(shapes):
@@ -289,7 +289,7 @@ def color_detection(frame):
         if (h < val[1][0]) and (h > val[0][0]) and (s < val[1][1]) and (s > val[0][1]) and (v < val[1][2]) and (v > val[0][2]):
             color = k
             break
-    return color,color_arr
+    return color
 	
 def alphabetic_detection(img):
     roi = get_roi(img)
@@ -319,7 +319,7 @@ class Detector:
     """
 
     # Constructor
-    def __init__(self, model_path = '/DRAG_Shape_detector/runs/detect/train/weights/best.onnx', conf=0.25):
+    def __init__(self, model_path = '/home/jetson/Desktop/Dragkit/DRAG_Shape_detector/runs/detect/train/weights/best.pt', conf=0.25):
         self.model = YOLO(model_path)
         self.desired_shape = None
         self.conf = conf
@@ -387,6 +387,8 @@ class Detector:
         Returns:
             List[DetectionResult]: List of detection results.
         """
+        #frame = cv2.resize(frame,dsize=(1024,1024),interpolation=cv2.INTER_CUBIC)
+        
         results = self.model.predict(
             source=frame, stream=stream, show=show, conf=self.conf
         )
@@ -401,7 +403,7 @@ class Detector:
                     int(y2),
                     int(class_id),
                 )
-                x,y = ((x2+x1)/2),((y2+y1)/2)
+                x,y = int((x1+((x2-x1)/2))-(3840/2)),int((2160/2)-(y1+((y2-y1)/2)))
                 cropped_frame = frame[y1:y2, x1:x2]
                 self.detections.append(
                     (self.class_Labels[class_id], cropped_frame, score,x,y)
@@ -451,12 +453,3 @@ class Detector:
 
         return self.detections
 
-def object_detection(frame):
-    #pytesseract.pytesseract.tesseract_cmd = r'C:/Users/TFgam/AppData/Local/Tesseract-OCR/tesseract.exe'
-    cls_names = model.names
-    print(cls_names)
-    img,probs,shape,x,y = yolo(frame)
-    color = color_detection(img)
-    #charc = alphabetic_detection(img)
-    obj = Object(color,int(shape),'charc',(x,y))
-    return obj,probs

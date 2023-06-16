@@ -4,7 +4,7 @@ import numpy as np
 
 from pymavlink import mavutil
 
-master = mavutil.mavlink_connection('udpin:0.0.0.0:14551')  # mavproxy.py --out=udp:localhost:14551
+master = mavutil.mavlink_connection('udpin:0.0.0.0:14550')  # mavproxy.py --out=udp:localhost:14551
 master.wait_heartbeat()
 
 print('connected to mav')
@@ -32,6 +32,7 @@ def flight_mode(mode: str):
         mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
         mode_id)
 
+
 def align(port):
     done = False
     flight_mode('GUIDED')
@@ -47,19 +48,25 @@ def align(port):
         speed_vector= np.sqrt(nav.vx**2 + nav.vy**2)
         Attitude = master.recv_match(type='AHRS2', blocking=True)
         heading, pitch, roll = Attitude.yaw, Attitude.pitch, Attitude.roll
-        
+
         try:
             msg = mysocket.recv(1024).decode('utf-8').split('#')
             for data in msg:
                 if data != '':
                     msg = data
             print(msg)
+            
+            if msg == 'fuck':
+                mysocket.send('align#'.encode('utf-8'))
+                continue
+
             msg = msg.split(',')
-            x, y = int(msg[0]), int(msg[1])
+            x, y = int(float(msg[0])),int(float(msg[1]))
             mysocket.send('align#'.encode('utf-8'))
             error_vector = np.sqrt(x**2 + y**2)
 
-        except:
+        except Exception as e:
+            print(e)
             print('lost')
             done = True
             mysocket.close()
@@ -67,7 +74,7 @@ def align(port):
         
         else:
             
-            error_relative_heading = np.arctan2(y, x)
+            error_relative_heading = np.arctan2(x, y)
             compined_heading = heading + error_relative_heading
             step_x = K * (error_vector * np.cos(compined_heading))
             step_y = K * (error_vector * np.sin(compined_heading))
@@ -76,24 +83,29 @@ def align(port):
             if speed_vector != step_vector :
                 set_vel_glob(step_x, step_y)
 
-            if abs(speed_vector - step_vector) < 0.01:
+            if abs(speed_vector - step_vector) < 0.1 and speed_vector < 0.5:
                 print('aligned',abs(speed_vector - step_vector))
+                set_vel_glob(0, 0)
                 done = True
                 mysocket.send('aligned#'.encode('utf-8'))
                 mysocket.close()
                 return 'aligned'
-            
+
 
 HOST = 'localhost'
-PORT1 = 1995   
-PORT2 = 1416
+PORT1 = 3014
+PORT2 = 5016
 
 mysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 mysocket.connect((HOST, PORT1))
 print('connected')
 done = False
 
-message = mysocket.recv(1024).decode('utf-8')
+message = mysocket.recv(1024).decode('utf-8').split('#')
+for data in message:
+    if data != '':
+        message = data
+        
 print(message)
 if message == 'detected':
     a = align(PORT2)
